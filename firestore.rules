@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: registrations
+    // Document ID: auto-generated
+    // Fields:
+    //   - registrationId: string (required)
+    //   - fullName: string (required, 1-100 chars)
+    //   - nik: string (required, 16 chars)
+    //   - nisn: string (required, 10 chars)
+    //   - placeOfBirth: string (required)
+    //   - dateOfBirth: string (required, ISO 8601)
+    //   - gender: string (required, enum: Laki-laki, Perempuan)
+    //   - address: string (required)
+    //   - previousSchool: string (required)
+    //   - parentName: string (required)
+    //   - phoneNumber: string (required)
+    //   - status: string (required, enum: Pending, Accepted, Rejected)
+    //   - createdAt: timestamp (required)
+    //
+    // Collection: settings
+    // Document ID: config
+    // Fields:
+    //   - schoolName: string
+    //   - logoUrl: string
+    //   - registrationOpen: bool
+    //   - announcement: string
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "sajasatu966@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidRegistration(data) {
+      return data.keys().hasAll(['fullName', 'nik', 'nisn', 'placeOfBirth', 'dateOfBirth', 'gender', 'address', 'previousSchool', 'parentName', 'phoneNumber', 'status', 'createdAt']) &&
+             data.fullName is string && data.fullName.size() > 0 && data.fullName.size() <= 100 &&
+             data.nik is string && data.nik.size() == 16 &&
+             data.nisn is string && data.nisn.size() == 10 &&
+             data.gender in ['Laki-laki', 'Perempuan'] &&
+             data.status in ['Pending', 'Accepted', 'Rejected'];
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /registrations/{regId} {
+      // Students can register without auth if registration is open
+      // But for now, let's just allow create if data is valid
+      allow create: if isValidRegistration(request.resource.data) && 
+                      request.resource.data.status == 'Pending';
+      
+      // Only admin can read all registrations
+      allow list: if isAdmin();
+      
+      // Allow get if the student knows their ID (for printing/checking status)
+      // This is a bit open, but necessary for "mandiri" without accounts
+      allow get: if true; 
+      
+      // Only admin can update status or delete
+      allow update: if isAdmin() && isValidRegistration(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /settings/config {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isAdmin();
+    }
+  }
+}

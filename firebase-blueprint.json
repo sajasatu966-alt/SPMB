@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "Student": {
+      "title": "Student Registration",
+      "description": "Information about a student registering for SMP Negeri 2 Sakra Barat",
+      "type": "object",
+      "properties": {
+        "registrationId": { "type": "string", "description": "Unique registration ID" },
+        "fullName": { "type": "string", "description": "Full name of the student" },
+        "nik": { "type": "string", "description": "National Identification Number" },
+        "nisn": { "type": "string", "description": "National Student Identification Number" },
+        "placeOfBirth": { "type": "string", "description": "City/Place of birth" },
+        "dateOfBirth": { "type": "string", "format": "date", "description": "Date of birth" },
+        "gender": { "type": "string", "enum": ["Laki-laki", "Perempuan"], "description": "Gender" },
+        "address": { "type": "string", "description": "Full address" },
+        "previousSchool": { "type": "string", "description": "Name of the previous elementary school" },
+        "parentName": { "type": "string", "description": "Name of parent/guardian" },
+        "phoneNumber": { "type": "string", "description": "Contact phone number" },
+        "status": { "type": "string", "enum": ["Pending", "Accepted", "Rejected"], "description": "Registration status" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Registration timestamp" }
+      },
+      "required": ["fullName", "nik", "nisn", "placeOfBirth", "dateOfBirth", "gender", "address", "previousSchool", "parentName", "phoneNumber"]
+    },
+    "Settings": {
+      "title": "System Settings",
+      "description": "Global settings for the SPMB system",
+      "type": "object",
+      "properties": {
+        "schoolName": { "type": "string", "description": "Name of the school" },
+        "logoUrl": { "type": "string", "description": "URL of the school logo" },
+        "registrationOpen": { "type": "boolean", "description": "Whether registration is currently open" },
+        "announcement": { "type": "string", "description": "General announcement text" }
+      }
+    }
+  },
+  "firestore": {
+    "/registrations/{registrationId}": {
+      "schema": "Student",
+      "description": "Collection of student registrations"
+    },
+    "/settings/config": {
+      "schema": "Settings",
+      "description": "Global system configuration"
+    }
+  }
+}

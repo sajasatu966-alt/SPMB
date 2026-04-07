@@ -1,0 +1,5 @@
+{
+  "name": "SPMB SMP Negeri 2 Sakra Barat",
+  "description": "Sistem Penerimaan Murid Baru untuk SMP Negeri 2 Sakra Barat dengan fitur pendaftaran mandiri, dashboard admin, dan pengaturan sistem.",
+  "requestFramePermissions": []
+}
